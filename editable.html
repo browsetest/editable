@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Custom Text Entry</title>
+<style>
+  .text-entry {
+    border: 1px solid #ccc;
+    padding: 8px;
+    min-height: 20px;
+    width: 300px;
+    outline: none;
+  }
+  .cursor {
+    display: inline-block;
+    width: 2px;
+    background-color: black;
+    margin-left: 2px;
+    animation: blink 1s step-end infinite;
+  }
+  @keyframes blink {
+    50% {
+      background-color: transparent;
+    }
+  }
+</style>
+</head>
+<body>
+<div id="textEntry" class="text-entry" tabindex="0">
+  <span id="textContent"></span><span class="cursor"></span>
+</div>
+<script>
+  const textContent = document.getElementById('textContent');
+  const textEntry = document.getElementById('textEntry');
+
+  textEntry.addEventListener('keydown', function(event) {
+    if (event.key === 'Backspace') {
+      textContent.textContent = textContent.textContent.slice(0, -1);
+    } else if (event.key.length === 1) {
+      textContent.textContent += event.key;
+    }
+    event.preventDefault();
+  });
+
+  textEntry.addEventListener('click', function() {
+    textEntry.focus();
+  });
+
+  textEntry.addEventListener('blur', function() {
+    document.querySelector('.cursor').style.display = 'none';
+  });
+
+  textEntry.addEventListener('focus', function() {
+    document.querySelector('.cursor').style.display = 'inline-block';
+  });
+</script>
+</body>
+</html>
