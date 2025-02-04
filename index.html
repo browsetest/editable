@@ -29,7 +29,7 @@
             padding: 5px;
             box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
         }
-        #uploadBtn {
+        #uploadBtn, #standardUploadBtn {
             background-color: #4CAF50;
             border: none;
             color: white;
@@ -41,6 +41,9 @@
             margin: 4px 2px;
             cursor: pointer;
             border-radius: 4px;
+        }
+        #standardUploadBtn {
+            background-color: #008CBA;
         }
         #status {
             margin-top: 20px;
@@ -66,33 +69,17 @@
                 background-color: transparent;
             }
         }
-        #dropZone {
-            width: 300px;
-            height: 200px;
-            border: 2px dashed #ccc;
-            border-radius: 8px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin: 20px 0;
-            transition: background-color 0.3s;
-        }
-        #dropZone.dragover {
-            background-color: #e0e0e0;
-        }
     </style>
 </head>
 <body>
     <div id="content">
         <h1>File Upload & Custom Text Entry</h1>
         <p>Right-click anywhere on this page to open the context menu and select "Upload File".</p>
+        <button id="standardUploadBtn">Standard Upload</button>
         <div id="status"></div>
     </div>
 
-    <div id="dropZone">
-        <p>Drag & Drop Files Here</p>
-    </div>
-
+    <h2>Enter Your Text Below:</h2>
     <div id="textEntry" class="text-entry" tabindex="0">
         <span id="textContent"></span><span class="cursor"></span>
     </div>
@@ -180,25 +167,21 @@
             document.querySelector('.cursor').style.display = 'inline-block';
         });
 
-        // Drag and Drop functionality
-        const dropZone = document.getElementById('dropZone');
+        // Standard Upload Button functionality
+        document.getElementById('standardUploadBtn').addEventListener('click', function() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.style.display = 'none';
+            document.body.appendChild(input);
 
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.classList.add('dragover');
-        });
+            input.click();
 
-        dropZone.addEventListener('dragleave', () => {
-            dropZone.classList.remove('dragover');
-        });
-
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropZone.classList.remove('dragover');
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                uploadFile(files[0]);
-            }
+            input.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    uploadFile(this.files[0]);
+                }
+                document.body.removeChild(input);
+            });
         });
     </script>
 </body>
