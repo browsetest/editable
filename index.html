@@ -1,59 +1,205 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Custom Text Entry</title>
-<style>
-  .text-entry {
-    border: 1px solid #ccc;
-    padding: 8px;
-    min-height: 20px;
-    width: 300px;
-    outline: none;
-  }
-  .cursor {
-    display: inline-block;
-    width: 2px;
-    background-color: black;
-    margin-left: 2px;
-    animation: blink 1s step-end infinite;
-  }
-  @keyframes blink {
-    50% {
-      background-color: transparent;
-    }
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Upload & Custom Text Entry</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        #content {
+            text-align: center;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        #customMenu {
+            background-color: white;
+            border: 1px solid #ccc;
+            padding: 5px;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+        }
+        #uploadBtn {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        #status {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        .text-entry {
+            border: 1px solid #ccc;
+            padding: 8px;
+            min-height: 20px;
+            width: 300px;
+            outline: none;
+            background-color: white;
+        }
+        .cursor {
+            display: inline-block;
+            width: 2px;
+            background-color: black;
+            margin-left: 2px;
+            animation: blink 1s step-end infinite;
+        }
+        @keyframes blink {
+            50% {
+                background-color: transparent;
+            }
+        }
+        #dropZone {
+            width: 300px;
+            height: 200px;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+            transition: background-color 0.3s;
+        }
+        #dropZone.dragover {
+            background-color: #e0e0e0;
+        }
+    </style>
 </head>
 <body>
-  <h1> hi</h1>
-<div id="textEntry" class="text-entry" tabindex="0">
-  <span id="textContent"></span><span class="cursor"></span>
-</div>
-<script>
-  const textContent = document.getElementById('textContent');
-  const textEntry = document.getElementById('textEntry');
+    <div id="content">
+        <h1>File Upload & Custom Text Entry</h1>
+        <p>Right-click anywhere on this page to open the context menu and select "Upload File".</p>
+        <div id="status"></div>
+    </div>
 
-  textEntry.addEventListener('keydown', function(event) {
-    if (event.key === 'Backspace') {
-      textContent.textContent = textContent.textContent.slice(0, -1);
-    } else if (event.key.length === 1) {
-      textContent.textContent += event.key;
-    }
-    event.preventDefault();
-  });
+    <div id="dropZone">
+        <p>Drag & Drop Files Here</p>
+    </div>
 
-  textEntry.addEventListener('click', function() {
-    textEntry.focus();
-  });
+    <div id="textEntry" class="text-entry" tabindex="0">
+        <span id="textContent"></span><span class="cursor"></span>
+    </div>
 
-  textEntry.addEventListener('blur', function() {
-    document.querySelector('.cursor').style.display = 'none';
-  });
+    <script>
+        // Context Menu File Upload functionality
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            showCustomMenu(e.clientX, e.clientY);
+        });
 
-  textEntry.addEventListener('focus', function() {
-    document.querySelector('.cursor').style.display = 'inline-block';
-  });
-</script>
+        function showCustomMenu(x, y) {
+            const menu = document.createElement('div');
+            menu.id = 'customMenu';
+            menu.style.position = 'fixed';
+            menu.style.left = `${x}px`;
+            menu.style.top = `${y}px`;
+            menu.innerHTML = '<button id="uploadBtn">Upload File</button>';
+            document.body.appendChild(menu);
+
+            document.getElementById('uploadBtn').addEventListener('click', openFileChooser);
+        }
+
+        async function openFileChooser() {
+            try {
+                const [fileHandle] = await window.showOpenFilePicker();
+                const file = await fileHandle.getFile();
+                uploadFile(file);
+            } catch (err) {
+                console.error('Error selecting file:', err);
+                updateStatus('Error selecting file. Please try again.');
+            }
+            document.body.removeChild(document.getElementById('customMenu'));
+        }
+
+        async function uploadFile(file) {
+            try {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const fileContent = e.target.result;
+                    localStorage.setItem(file.name, fileContent);
+                    updateStatus(`File "${file.name}" saved to Chrome's local storage!`);
+                };
+                reader.readAsDataURL(file);
+            } catch (error) {
+                console.error('Error:', error);
+                updateStatus('Error saving file to local storage. Please try again.');
+            }
+        }
+
+        function updateStatus(message) {
+            document.getElementById('status').textContent = message;
+        }
+
+        // Close the custom menu when clicking outside of it
+        document.addEventListener('click', function(e) {
+            const menu = document.getElementById('customMenu');
+            if (menu && !menu.contains(e.target)) {
+                document.body.removeChild(menu);
+            }
+        });
+
+        // Custom Text Entry functionality
+        const textContent = document.getElementById('textContent');
+        const textEntry = document.getElementById('textEntry');
+
+        textEntry.addEventListener('keydown', function(event) {
+            if (event.key === 'Backspace') {
+                textContent.textContent = textContent.textContent.slice(0, -1);
+            } else if (event.key.length === 1) {
+                textContent.textContent += event.key;
+            }
+            event.preventDefault();
+        });
+
+        textEntry.addEventListener('click', function() {
+            textEntry.focus();
+        });
+
+        textEntry.addEventListener('blur', function() {
+            document.querySelector('.cursor').style.display = 'none';
+        });
+
+        textEntry.addEventListener('focus', function() {
+            document.querySelector('.cursor').style.display = 'inline-block';
+        });
+
+        // Drag and Drop functionality
+        const dropZone = document.getElementById('dropZone');
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                uploadFile(files[0]);
+            }
+        });
+    </script>
 </body>
 </html>
