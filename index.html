@@ -171,6 +171,7 @@
         document.getElementById('standardUploadBtn').addEventListener('click', function() {
             const input = document.createElement('input');
             input.type = 'file';
+            input.accept = 'text/*,image/*,application/*';
             input.style.display = 'none';
             document.body.appendChild(input);
 
